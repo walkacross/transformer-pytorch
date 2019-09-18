@@ -24,6 +24,9 @@ class MultiHeadedAttention(nn.Module):
         self.dropout = nn.Dropout(p=dropout)
     
     def forward(self, query, key, value, mask=None):
+        if mask is not None:
+            mask = mask.unsqueeze(1)
+            
         batch_size = query.size(0)
         
         # 1) Do all the linear projections in batch from d_model => h x d_k
