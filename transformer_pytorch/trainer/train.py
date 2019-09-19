@@ -7,6 +7,11 @@ from torchtext.data import Field, BucketIterator
 from transformer_pytorch.dataset.utils import rebatch
 
 
+def count_parameters(model: nn.Module):
+    output = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    print('The model has {} trainable parameters'.format(output))
+    return output 
+
 class TransformerTrainer(object):
     def __init__(self, model:nn.Module,
                        loss_function:nn.Module,
@@ -14,6 +19,7 @@ class TransformerTrainer(object):
                        device:torch.device,
                        metric_function:nn.Module) -> None:
         
+        count_parameters(model)
         self.model = model.to(device)
         self.device = device
         
@@ -101,4 +107,7 @@ class TransformerTrainer(object):
         now = datetime.now()
         elapsed = now - self.start_time
         return str(elapsed).split('.')[0]  # remove milliseconds
-            
+    
+
+
+    
