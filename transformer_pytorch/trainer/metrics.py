@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import pdb
 
 class TokenCrossEntropyLoss(nn.Module):
     
@@ -10,10 +11,9 @@ class TokenCrossEntropyLoss(nn.Module):
         self.loss_function = nn.CrossEntropyLoss(reduction="sum",ignore_index=pad_idx)
     
     def forward(self, input, target):
-        batch_size, seq_len, vocabulary_size = input.size()
         
-        input_flat = input.contiguous().view(batch_size*seq_len, vocabulary_size)
-        target_flat = target.contiguous().view(batch_size*seq_len)
+        input_flat = input.contiguous().view(-1, input.size(-1))
+        target_flat = target.contiguous().view(-1)
         
         batch_loss_sum = self.loss_function(input_flat, target_flat)
         count = (target_flat != self.pad_idx).sum().item()
@@ -21,7 +21,7 @@ class TokenCrossEntropyLoss(nn.Module):
         return batch_loss_sum, count
 
 class LabelSmoothingLoss(nn.Module):
-    def __init__(self, label_smoothing, vocabulary_size, pad_idx):
+    def __init__(self, size, label_smoothing, pad_idx):
         assert 0.0 < label_smoothing <=1.0
         super().__init__()
         
@@ -29,31 +29,28 @@ class LabelSmoothingLoss(nn.Module):
         self.log_softmax = nn.LogSoftmax(dim=-1)
         self.criterion = nn.KLDivLoss(reduction="sum")
         
-        smoothing_value = label_smoothing / (vocabulary_size - 2)
-        smoothed_targets = torch.full((vocabulary_size,), smoothing_value)
-        smoothed_targets[self.pad_idx] = 0
-        self.register_buffer("smoothed_targets", smoothed_targets.unsqueeze(0))
+        self.smoothing = label_smoothing
+        self.condidence = 1.0 - label_smoothing
+        self.size = size
+        self.true_dist = None
         
-        self.confidence = 1.0 - label_smoothing
-    
     def forward(self, input, target):
+        #pdb.set_trace()
+        input = self.log_softmax(input)
         
-        batch_size, seq_len, vocabulary_size = input.size()
+        # input flat
+        input = input.contiguous().view(-1, input.size(-1))
+        target = target.contiguous().view(-1)
+        
+        true_dist = input.data.clone()
+        true_dist.requires_grad = False
+        true_dist.fill_(self.smoothing/(self.size-2))
+        true_dist.scatter_(1, target.unsqueeze(1), self.condidence)        
+        true_dist[:,self.pad_idx] =0
+        true_dist.masked_fill_((target==self.pad_idx).unsqueeze(1),0)
+        self.true_dist = true_dist 
 
-        input_log_softmax = self.log_softmax(input)
-        input_flat = input_log_softmax.contiguous().view(batch_size * seq_len, vocabulary_size)
-        target_flat = target.contiguous().view(batch_size * seq_len)
-
-        smoothed_target = self.smoothed_targets.repeat(target_flat.size(0), 1).to(target_flat.device)
-        # smoothed_targets: (batch_size * seq_len, vocabulary_size)
-
-        smoothed_target.scatter_(1, target_flat.unsqueeze(1), self.confidence)
-        # smoothed_targets: (batch_size * seq_len, vocabulary_size)
-
-        smoothed_target.masked_fill_((target_flat == self.pad_idx).unsqueeze(1), 0)
-        # masked_targets: (batch_size * seq_len, vocabulary_size)
-
-        loss = self.criterion(input_flat, smoothed_target)
+        loss = self.criterion(input, true_dist)
         count = (target != self.pad_idx).sum().item()
 
         return loss, count

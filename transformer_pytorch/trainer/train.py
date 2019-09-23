@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from datetime import datetime
 import torch
@@ -89,6 +90,9 @@ class TransformerTrainer(object):
             if dataloader_val is not None:
                 self.model.eval()
                 val_epoch_loss, val_epoch_metrics = self.run_epoch(dataloader=dataloader_val, mode='val', pad_idx=pad_idx)
+                
+                accuracy = val_epoch_metrics[2]
+                self._save_model(accuracy)
             else:
                 val_epoch_loss = None
                 val_epoch_metrics =[]
@@ -108,6 +112,31 @@ class TransformerTrainer(object):
         elapsed = now - self.start_time
         return str(elapsed).split('.')[0]  # remove milliseconds
     
-
+    def _save_model(self, accuracy):
+        if not getattr(self, "best_accuracy", None):
+            self.best_accuracy = 0
+        if not getattr(self, "saved", None):
+            self.saved = []
+        
+        if getattr(self, 'model_dir', None):
+            if not os.path.exists(self.model_dir):
+                os.makedirs(self.model_dir)
+        else:
+            self.model_dir = os.getcwd()
+        
+        if accuracy > self.best_accuracy:
+            self.best_accuracy = accuracy
+            #
+            checkpoint_filename = "{}_Accuracy_{}.pth".format(self.__class__.__name__, round(accuracy, 4))
+            file_path = os.path.join(self.model_dir, checkpoint_filename)
+            torch.save(self.model.state_dict(), file_path)
+            self.saved.append(file_path)
+        
+        if len(self.saved)>2:
+            to_removed_file = self.saved.pop(0)
+            os.remove(to_removed_file)
+            
+        
+        
 
     

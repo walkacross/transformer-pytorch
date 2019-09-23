@@ -8,7 +8,7 @@ Pytorch implementation of Google AI's 2017 Transformer model
 Google AI in 2017 proposed a new simple network architecture, the Transformer, based solely on attention mechanisms, dispensing with recurrence and convolutions entirely.
 As you see, this model architecture becomes the base stone of the following state-of-the-art pre-trained models in Natural Language Processing (NLP), such as GPT, BERT, Transformer-XL,XLnet, RoBERTa. 
 
-This repo will walk through the implementation of Transformer. Code is simple, clean and easy to understand. Some of these codes are based on The ![Annotated Transformer](http://nlp.seas.harvard.edu/2018/04/03/attention.html).
+This repo will walk through the implementation of Transformer. Code is simple, clean and easy to understand. Some of these codes are based on The [Annotated Transformer](http://nlp.seas.harvard.edu/2018/04/03/attention.html).
 
 Currently this project is working in process, as always, PRs are welcome :)
 
@@ -32,9 +32,9 @@ python setup.py develop
 
 Allen Yu (yujiangallen@126.com)
 
-#License
+# License
 This project following Apache 2.0 License as written in LICENSE file
 
 Copyright 2018 Allen Yu, Quantitative Finance Lab, respective Transformer contributors
 
-Copyright (c) 2018 Alexander Rush : The Annotated Trasnformer
+Copyright (c) 2018 Alexander Rush : [Annotated Transformer](http://nlp.seas.harvard.edu/2018/04/03/attention.html)
