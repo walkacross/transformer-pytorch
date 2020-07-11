@@ -35,6 +35,6 @@ Allen Yu (yujiangallen@126.com)
 # License
 This project following Apache 2.0 License as written in LICENSE file
 
-Copyright 2018 Allen Yu, Quantitative Finance Lab, respective Transformer contributors
+Copyright 2019 Allen Yu, Quantitative Finance Lab, respective Transformer contributors
 
 Copyright (c) 2018 Alexander Rush : [Annotated Transformer](http://nlp.seas.harvard.edu/2018/04/03/attention.html)
