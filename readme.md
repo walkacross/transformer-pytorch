@@ -1,3 +1,4 @@
+![CI](https://github.com/walkacross/transformer-pytorch/workflows/CI/badge.svg)
 # Transformer-pytorch
 
 Pytorch implementation of Google AI's 2017 Transformer model
